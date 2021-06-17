@@ -5,27 +5,27 @@
 OADP allows you to configure any set of Velero plugins you want. OADP includes
 a default list of plugins that we support and optionally allows you to specify
 any custom image if you have third-party plugin you'd like to install for
-Velero. To learn more, see [plugin configuration](plugins.md).
+Velero. To learn more, see [plugin configuration](./plugins.md).
 
 ### Backup Storage Locations and Volume Snapshot Locations
 
 Velero supports backup storage locations and volume snapshot locations from a
 number of cloud providers (AWS, Azure and GCP). Please refer the section
 [configure Backup Storage Locations and Volume Snapshot
-Locations](bsl_and_vsl.md). 
+Locations](./bsl_and_vsl.md). 
 
 ### Resource requests and limits customization
 
 By default, the Velero deployment requests 500m CPU, 128Mi memory and sets a
 limit of 1000m CPU, 512Mi. Customization of these resource requests and limits
 may be performed using steps specified in the [Resource requests and limits
-customization](resource_req_limits.md) section.
+customization](./resource_req_limits.md) section.
 
 ### Use self-signed certificate
 
 If you intend to use Velero with a storage provider that is secured by a
 self-signed certificate, you may need to instruct Velero to trust that
-certificate. See [Use self-sigend certificate](self_signed_certs.md)
+certificate. See [Use self-signed certificate](./self_signed_certs.md)
 section for details.
 
 ### Usage of Velero `--features` option
