@@ -194,61 +194,32 @@ replicaset.apps/velero-76546b65c8          1         1         1         2m17s
 <pre><code>velero client config set namespace=oadp-operator
 </code></pre>
 <div style="break-before: page; page-break-before: always;"></div><h2 id="configuration"><a class="header" href="#configuration">Configuration</a></h2>
-<h3 id="configure-velero-plugins"><a class="header" href="#configure-velero-plugins">Configure Velero Plugins</a></h3>
-<p>There are mainly two categories of velero plugins that can be specified while installing Velero:</p>
-<ol>
-<li><code>default-velero-plugins</code>:<br>
-Five types of default velero plugins can be installed - AWS, GCP, Azure, OpenShift, and CSI. For installation, you need to specify them in the <code>konveyor.openshift.io_v1alpha1_velero_cr.yaml</code> file during deployment.
-<pre><code> apiVersion: konveyor.openshift.io/v1alpha1
- kind: Velero
- metadata:
-   name: example-velero
- spec:
-   default_velero_plugins:
-   - azure
-   - gcp
-   - aws
-   - openshift    
-   - csi
-</code></pre>
-The above specification will install Velero with all five default plugins. </li>
-</ol>
-<p>Note:</p>
-<ul>
-<li>For usage of the <code>csi</code> plugin with Velero you will need to additionally set <code>--features=EnableCSI</code>, please refer the section titled <strong>Usage of Velero <code>--features</code> option</strong> for more details. <a href="https://github.com/vmware-tanzu/velero-plugin-for-csi/">This</a> repository has more information about the CSI plugin.</li>
-<li>Similarly, for installation of <code>vsphere</code> plugin, please refer the section titled <strong>Usage of Velero <code>--features</code> option</strong> for more details. <a href="https://github.com/vmware-tanzu/velero-plugin-for-vsphere">This</a> repository has more information about the vSphere plugin.</li>
-</ul>
-<ol start="2">
-<li>
-<p><code>custom-velero-plugin</code>:<br>
-For installation of custom velero plugins, you need to specify the plugin <code>image</code> and plugin <code>name</code> in the <code>konveyor.openshift.io_v1alpha1_velero_cr.yaml</code> file during deployment.</p>
-<p>For instance, </p>
-<pre><code> apiVersion: konveyor.openshift.io/v1alpha1
- kind: Velero
- metadata:
-   name: example-velero
- spec:
-   default_velero_plugins:
-   - azure
-   - gcp
-   custom_velero_plugins:
-   - name: custom-plugin-example
-     image: quay.io/example-repo/custom-velero-plugin   
-</code></pre>
-<p>The above specification will install Velero with 3 plugins (azure, gcp and custom-plugin-example).</p>
-</li>
-</ol>
-<h3 id="backup-storage-locations-and-volume-snapshot-locations-customization"><a class="header" href="#backup-storage-locations-and-volume-snapshot-locations-customization">Backup Storage Locations and Volume Snapshot Locations Customization</a></h3>
-<p>Velero supports backup storage locations and volume snapshot locations from a number of cloud providers (AWS, Azure and GCP). Please refer the section <a href="docs/bsl_and_vsl.html">configure Backup Storage Locations and Volume Snapshot Locations</a>. </p>
-<h3 id="using-upstream-images"><a class="header" href="#using-upstream-images">Using upstream images</a></h3>
-<p>In order to use the upstream images for Velero deployment as well as its plugins, you need to set a flag <code>use_upstream_images</code> as <code>true</code> in the <code>konveyor.openshift.io_v1alpha1_velero_cr.yaml</code> during installation of the operator.</p>
-<p><b>Note:</b> If the flag <code>use_upstream_images</code> is set, the registry will be switched from <code>quay.io</code> to <code>docker.io</code> and v1.4.0 (current upstream version) image tag will be used for <code>Velero</code> and <code>latest</code> image tag will be used for the <code>plugins</code>.</p>
+<h3 id="plugins"><a class="header" href="#plugins">Plugins</a></h3>
+<p>OADP allows you to configure any set of Velero plugins you want. OADP includes
+a default list of plugins that we support and optionally allows you to specify
+any custom image if you have third-party plugin you'd like to install for
+Velero. To learn more, see <a href="plugins.html">plugin configuration</a>.</p>
+<h3 id="backup-storage-locations-and-volume-snapshot-locations"><a class="header" href="#backup-storage-locations-and-volume-snapshot-locations">Backup Storage Locations and Volume Snapshot Locations</a></h3>
+<p>Velero supports backup storage locations and volume snapshot locations from a
+number of cloud providers (AWS, Azure and GCP). Please refer the section
+<a href="bsl_and_vsl.html">configure Backup Storage Locations and Volume Snapshot
+Locations</a>. </p>
 <h3 id="resource-requests-and-limits-customization"><a class="header" href="#resource-requests-and-limits-customization">Resource requests and limits customization</a></h3>
-<p>By default, the Velero deployment requests 500m CPU, 128Mi memory and sets a limit of 1000m CPU, 512Mi. Customization of these resource requests and limits may be performed using steps specified in the <a href="docs/resource_req_limits.html">Resource requests and limits customization</a> section.</p>
-<h3 id="use-self-sigend-certificate"><a class="header" href="#use-self-sigend-certificate">Use self-sigend certificate</a></h3>
-<p>If you intend to use Velero with a storage provider that is secured by a self-signed certificate, you may need to instruct Velero to trust that certificate. See <a href="docs/self_signed_certs.html">Use self-sigend certificate</a> section for details.</p>
+<p>By default, the Velero deployment requests 500m CPU, 128Mi memory and sets a
+limit of 1000m CPU, 512Mi. Customization of these resource requests and limits
+may be performed using steps specified in the <a href="resource_req_limits.html">Resource requests and limits
+customization</a> section.</p>
+<h3 id="use-self-signed-certificate"><a class="header" href="#use-self-signed-certificate">Use self-signed certificate</a></h3>
+<p>If you intend to use Velero with a storage provider that is secured by a
+self-signed certificate, you may need to instruct Velero to trust that
+certificate. See <a href="self_signed_certs.html">Use self-sigend certificate</a>
+section for details.</p>
 <h3 id="usage-of-velero---features-option"><a class="header" href="#usage-of-velero---features-option">Usage of Velero <code>--features</code> option</a></h3>
-<p>Some of the new features in Velero are released as beta features behind feature flags which are not enabled by default during the Velero installation. In order to provide <code>--features</code> flag values, you need to use the specify the flags under <code>velero_feature_flags:</code> in the <code>konveyor.openshift.io_v1alpha1_velero_cr.yaml</code> file during deployment.</p>
+<p>Some of the new features in Velero are released as beta features behind feature
+flags which are not enabled by default during the Velero installation. In order
+to provide <code>--features</code> flag values, you need to use the specify the flags
+under <code>velero_feature_flags:</code> in the
+<code>konveyor.openshift.io_v1alpha1_velero_cr.yaml</code> file during deployment.</p>
 <p>Some of the usage instances of the <code>--features</code> flag are as follows:</p>
 <ul>
 <li>Enabling Velero plugin for CSI: To enable CSI plugin you need to add two things in the <code>konveyor.openshift.io_v1alpha1_velero_cr.yaml</code> file during deployment.
@@ -276,7 +247,14 @@ velero_feature_flags: EnableCSI
 velero_feature_flags: EnableLocalMode
 use_upstream_images: true
 </code></pre>
-<p>Note: The above is an example of installing the Velero plugin for vSphere in <code>LocalMode</code> . Setting <code>EnableLocalMode</code> features flag is not always necessary for the usage of vSphere plugin but the pre-requisites must be satisfied and appropriate configuration must be applied, please refer <a href="https://github.com/vmware-tanzu/velero-plugin-for-vsphere">Velero plugin for vSphere</a> for more details. Also, if you plan on using multiple feature flags at once, pass them to <code>velero_feature_flags</code> as comma seperated values, for instance, <code>velero_feature_flags: EnableLocalMode,EnableCSI</code></p>
+<p>Note: The above is an example of installing the Velero plugin for vSphere in
+<code>LocalMode</code> . Setting <code>EnableLocalMode</code> features flag is not always necessary
+for the usage of vSphere plugin but the pre-requisites must be satisfied and
+appropriate configuration must be applied, please refer <a href="https://github.com/vmware-tanzu/velero-plugin-for-vsphere">Velero plugin for
+vSphere</a> for more
+details. Also, if you plan on using multiple feature flags at once, pass them
+to <code>velero_feature_flags</code> as comma seperated values, for instance,
+<code>velero_feature_flags: EnableLocalMode,EnableCSI</code></p>
 
                     </main>
 
