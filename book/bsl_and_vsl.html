@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Installation - OADP Documentation</title>
+        <title>Storage - OADP Documentation</title>
                 
 
         <!-- Custom HTML head -->
@@ -82,7 +82,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">1.</strong> Installation</a></li><li class="chapter-item expanded "><a href="configuration.html"><strong aria-hidden="true">2.</strong> Configuration</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="plugins.html"><strong aria-hidden="true">2.1.</strong> Plugins</a></li><li class="chapter-item expanded "><a href="bsl_and_vsl.html"><strong aria-hidden="true">2.2.</strong> Storage</a></li><li class="chapter-item expanded "><a href="additonal_config.html"><strong aria-hidden="true">2.3.</strong> Additional</a></li></ol></li></ol>            </div>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="installation.html"><strong aria-hidden="true">1.</strong> Installation</a></li><li class="chapter-item expanded "><a href="configuration.html"><strong aria-hidden="true">2.</strong> Configuration</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="plugins.html"><strong aria-hidden="true">2.1.</strong> Plugins</a></li><li class="chapter-item expanded "><a href="bsl_and_vsl.html" class="active"><strong aria-hidden="true">2.2.</strong> Storage</a></li><li class="chapter-item expanded "><a href="additonal_config.html"><strong aria-hidden="true">2.3.</strong> Additional</a></li></ol></li></ol>            </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
 
@@ -143,62 +143,57 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="installation"><a class="header" href="#installation">Installation</a></h1>
+                        <hr />
+<h2 id="backup-storage-locations-and-volume-snapshot-locations-customization"><a class="header" href="#backup-storage-locations-and-volume-snapshot-locations-customization">Backup Storage Locations and Volume Snapshot Locations Customization</a></h2>
 <hr />
-<h2 id="getting-started-with-basic-install-olmoperatorhub"><a class="header" href="#getting-started-with-basic-install-olmoperatorhub">Getting started with basic install (OLM/OperatorHub)</a></h2>
-<hr />
-<h3 id="installing-operator"><a class="header" href="#installing-operator">Installing Operator</a></h3>
-<p>You can install the OADP Operator from the Openshift's OperatorHub. You can search for the operator using keywords like <code>oadp</code> or <code>velero</code></p>
-<p><img src="images/OADP-OLM-1.png" alt="OADP-OLM-1" /></p>
-<p>Now click on Install</p>
-<p><img src="images/OADP-OLM-2.png" alt="OADP-OLM-1" /></p>
-<p>Finally, click on subscribe, this will create a namespace named <code>oadp-operator</code> if it does not exist and install the OADP operator in it.</p>
-<p><img src="images/OADP-OLM-3.png" alt="OADP-OLM-1" /></p>
-<h3 id="creating-credentials-secret"><a class="header" href="#creating-credentials-secret">Creating credentials secret</a></h3>
-<p>Create secret for the cloud provider credentials to be used. Also, the credentials file present at <code>CREDENTIALS_FILE_PATH</code> shoud be in proper format, for instance if the provider is AWS it should follow this AWS credentials <a href="https://github.com/konveyor/velero-examples/blob/master/velero-install/aws-credentials">template</a></p>
-<pre><code>oc create secret generic &lt;SECRET_NAME&gt; --namespace oadp-operator --from-file cloud=&lt;CREDENTIALS_FILE_PATH&gt;
+<h3 id="configure-backup-storage-locations-and-volume-snapshot-locations"><a class="header" href="#configure-backup-storage-locations-and-volume-snapshot-locations">Configure Backup Storage Locations and Volume Snapshot Locations</a></h3>
+<p>For configuring the <code>backupStorageLocations</code> and the <code>volumeSnapshotLocations</code> we will be using the <code>backup_storage_locations</code> and the <code>volume_snapshot_locations</code> specs respectively in the <code>konveyor.openshift.io_v1alpha1_velero_cr.yaml</code> file during the deployement. </p>
+<p>For instance, If we want to configure <code>aws</code> for <code>backupStorageLocations</code> as well as <code>volumeSnapshotLocations</code> pertaining to velero, our <code>konveyor.openshift.io_v1alpha1_velero_cr.yaml</code> file should look something like this:</p>
+<pre><code>apiVersion: konveyor.openshift.io/v1alpha1
+kind: Velero
+metadata:
+  name: example-velero
+spec:
+  default_velero_plugins:
+  - aws
+  backup_storage_locations:
+  - name: default
+    provider: aws
+    object_storage:
+      bucket: myBucket
+      prefix: &quot;velero&quot;
+    config:
+      region: us-east-1
+      profile: &quot;default&quot;
+    credentials_secret_ref:
+      name: cloud-credentials
+      namespace: oadp-operator
+  volume_snapshot_locations:
+  - name: default
+    provider: aws
+    config:
+      region: us-west-2
+      profile: &quot;default&quot;
 </code></pre>
-<h3 id="creating-velero-cr"><a class="header" href="#creating-velero-cr">Creating Velero CR</a></h3>
-<p>Now create an instance of Velero CR by clicking on <code>Create Instance</code> as highlighted below:</p>
-<p><img src="images/Velero-CR-1.png" alt="Velero-CR-1" /></p>
-<p>Finally, set the CR spec values appropriately and click on create.</p>
-<p><img src="images/Velero-CR-2.png" alt="Velero-CR-2" /></p>
-<hr />
-<h2 id="verify-operator-installation"><a class="header" href="#verify-operator-installation">Verify Operator installation</a></h2>
-<hr />
-<p>Post completion of all the above steps (Non-OLM or OLM), you can check if the operator was successfully installed or not, the expected result for the command <code>oc get all -n oadp-operator</code> is as follows:</p>
-<pre><code>NAME                                 READY     STATUS    RESTARTS   AGE
-pod/oadp-operator-7749f885f6-9nm9w   1/1       Running   0          6m6s
-pod/restic-48s5r                     1/1       Running   0          2m16s
-pod/restic-5sr4c                     1/1       Running   0          2m16s
-pod/restic-bs5p2                     1/1       Running   0          2m16s
-pod/velero-76546b65c8-tm9vv          1/1       Running   0          2m16s
-
-NAME                            TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)             AGE
-service/oadp-operator-metrics   ClusterIP   172.30.21.118   &lt;none&gt;        8383/TCP,8686/TCP   5m51s
-
-NAME                    DESIRED   CURRENT   READY     UP-TO-DATE   AVAILABLE   NODE SELECTOR   AGE
-daemonset.apps/restic   3         3         3         3            3           &lt;none&gt;          2m17s
-
-NAME                            READY     UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/oadp-operator   1/1       1            1           6m7s
-deployment.apps/velero          1/1       1            1           2m17s
-
-NAME                                       DESIRED   CURRENT   READY     AGE
-replicaset.apps/oadp-operator-7749f885f6   1         1         1         6m7s
-replicaset.apps/velero-76546b65c8          1         1         1         2m17s
-
-</code></pre>
-<p><b>Note:</b> For using the <code>velero</code> CLI directly configured for the <code>oadp-operator</code> namespace, you may want to use the following command:</p>
-<pre><code>velero client config set namespace=oadp-operator
-</code></pre>
+<p><b>Note:</b> </p>
+<ul>
+<li>Be sure to use the same <code>secret</code> name you used while creating the cloud credentials secret in step 3 of Operator   installation section.</li>
+<li>Another thing to consider are the CR file specs, they should be tailored in accordance to your own cloud provider accounts, for instance <code>bucket</code> spec value should be according to your own bucket name and so on.</li>
+<li>Do not configure more than one <code>backupStorageLocations</code> per cloud provider, the velero installation will fail.</li>
+<li>bsl/vsl parameters in the OADP Velero CR must be specified using <code>snake_case</code> rather than <code>camelCase</code>.
+Keep this in mind when using parameters from the below parameter reference. For example, use <code>s3_url</code> rather than <code>s3Url</code>.</li>
+<li>Parameter reference for <a href="https://velero.io/docs/master/api-types/backupstoragelocation/">backupStorageLocations</a> and <a href="https://velero.io/docs/master/api-types/volumesnapshotlocation/">volumeSnapshotLocations</a></li>
+</ul>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
+                                                    <a rel="prev" href="plugins.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
                         
-                                                    <a rel="next" href="configuration.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                                    <a rel="next" href="additonal_config.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
                         
@@ -208,8 +203,11 @@ replicaset.apps/velero-76546b65c8          1         1         1         2m17s
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                                    <a rel="prev" href="plugins.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
                 
-                                    <a rel="next" href="configuration.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                    <a rel="next" href="additonal_config.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
                             </nav>
